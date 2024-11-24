@@ -1,25 +1,80 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./auth/AuthContext";
+import PrivateRoute from "./auth/PrivateRoute";
+import Login from "./auth/Login";
+import Home from "./pages/service/Home";
+import QuestionForm from "./pages/service/QuestionForm";
+import InterviewStart from "./pages/service/InterviewStart";
+import Interview from "./pages/service/Interview";
+import InterviewEnd from "./pages/service/InterviewEnd";
+import ThankYou from "./pages/service/ThankYou";
 
-function App() {
+// 管理画面用ページ
+import Dashboard from "./pages/adimin/Dashboard";
+import SurveyDetails from "./components/admin/SurveyDetails";
+
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/"
+            element={
+              <PrivateRoute>
+                <Home />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/questions"
+            element={
+              <PrivateRoute>
+                <QuestionForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/interview-start"
+            element={
+              <PrivateRoute>
+                <InterviewStart />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/interview"
+            element={
+              <PrivateRoute>
+                <Interview />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/interview-end"
+            element={
+              <PrivateRoute>
+                <InterviewEnd />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/thank-you"
+            element={
+              <PrivateRoute>
+                <ThankYou />
+              </PrivateRoute>
+            }
+          />
+          {/* 管理画面 */}
+          <Route path="/admin" element={<Dashboard />} />
+          <Route path="/details/:id" element={<SurveyDetails />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
-}
+};
 
 export default App;
