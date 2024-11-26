@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { db } from "../../firebase";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 import questions from "../../data/question";
+import { v4 as uuidv4 } from "uuid";
 
 const QuestionForm = () => {
   const [answers, setAnswers] = useState({});
@@ -37,15 +38,18 @@ const QuestionForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const sessionId = uuidv4();
+
     try {
       await addDoc(collection(db, "surveys"), {
+        sessionId,
         answers,
         createdAt: Timestamp.now(),
       });
 
       console.log("回答がFirestoreに保存されました:", answers);
       alert("回答が送信されました！");
-      navigate("/interview-start");
+      navigate("/interview-start", { state: { sessionId } });
     } catch (error) {
       console.error("回答の送信中にエラーが発生しました:", error);
       alert("送信に失敗しました。もう一度試してください。");
