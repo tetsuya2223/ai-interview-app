@@ -49,6 +49,9 @@ const QuestionForm = () => {
 
       console.log("回答がFirestoreに保存されました:", answers);
       alert("回答が送信されました！");
+      console.log("送信後の sessionId:", sessionId);
+      navigate("/interview-start", { state: { sessionId } });
+
       navigate("/interview-start", { state: { sessionId } });
     } catch (error) {
       console.error("回答の送信中にエラーが発生しました:", error);
