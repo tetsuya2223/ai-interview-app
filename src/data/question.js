@@ -22,7 +22,7 @@ const questions = [
     id: 4,
     question: "希望する職種を選択してください。",
     type: "radio",
-    options: ["ホールスタッフ", "キッチンスタッフ", "バリスタ"],
+    options: ["ホールスタッフ", "キッチンスタッフ"],
     required: true,
   },
   {
