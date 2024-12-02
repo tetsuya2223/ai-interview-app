@@ -9,6 +9,8 @@ import InterviewStart from "./pages/service/InterviewStart";
 import Interview from "./pages/service/Interview";
 import InterviewEnd from "./pages/service/InterviewEnd";
 import ThankYou from "./pages/service/ThankYou";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // 管理画面用ページ
 import Dashboard from "./pages/adimin/Dashboard";
@@ -18,6 +20,7 @@ const App = () => {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <ToastContainer position="top-right" autoClose={5000} />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route
