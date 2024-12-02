@@ -1,11 +1,22 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const InterviewStart = () => {
   const navigate = useNavigate();
+  const { state } = useLocation(); // state を取得
+  const { sessionId } = state || {}; // state が null の場合を考慮
 
   const handleStartInterview = () => {
-    navigate("/interview");
+    if (!sessionId) {
+      console.error(
+        "セッションIDがありません。アンケート画面からやり直してください。"
+      );
+      alert("セッションIDがありません。アンケート画面からやり直してください。");
+      navigate("/questions"); // アンケート画面に戻る
+      return;
+    }
+
+    navigate("/interview", { state: { sessionId } }); // sessionId を次に渡す
   };
 
   return (

@@ -12,8 +12,10 @@ const questions = [
 ];
 
 const Interview = () => {
-  const { state } = useLocation();
-  const { sessionId } = state;
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { sessionId } = location.state || {}; // state から sessionId を取得
+
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
   const [isReadyToRecord, setIsReadyToRecord] = useState(false);
@@ -22,7 +24,15 @@ const Interview = () => {
   const videoRef = useRef(null);
   const streamRef = useRef(null); // ストリームを管理
   const chunksRef = useRef([]); // 録画中のデータを管理
-  const navigate = useNavigate();
+
+  // セッションIDがない場合の処理
+  useEffect(() => {
+    if (!sessionId) {
+      console.error("セッションIDがありません。アンケートを完了してください。");
+      alert("セッションIDがありません。アンケートを完了してください。");
+      navigate("/"); // ホームにリダイレクト
+    }
+  }, [sessionId, navigate]);
 
   // 録画を開始する関数
   const startRecording = async () => {
@@ -91,8 +101,6 @@ const Interview = () => {
         method: "POST",
         headers: {
           "Content-Type": "video/webm",
-          // 必要に応じて Firebase Authentication トークンを設定
-          // "Authorization": `Bearer ${YOUR_FIREBASE_AUTH_TOKEN}`,
         },
         body: fileBlob,
       });
@@ -134,7 +142,7 @@ const Interview = () => {
     };
   }, []);
 
-  return (
+  return sessionId ? (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
       {!isReadyToRecord ? (
         <div className="flex flex-col items-center">
@@ -185,7 +193,7 @@ const Interview = () => {
         </>
       )}
     </div>
-  );
+  ) : null;
 };
 
 export default Interview;
