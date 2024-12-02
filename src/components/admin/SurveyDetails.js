@@ -37,18 +37,30 @@ const SurveyDetails = () => {
           </p>
           <div className="mt-4">
             <h2 className="text-lg font-bold">回答内容:</h2>
-            {Object.entries(survey.answers).map(
-              ([questionId, answer], index) => (
-                <div key={index} className="mb-2">
-                  <strong>Q{questionId}:</strong>{" "}
-                  {Array.isArray(answer) ? answer.join(", ") : answer}
-                </div>
+            {/* survey.answers が存在する場合にのみ Object.entries を実行 */}
+            {survey.answers ? (
+              Object.entries(survey.answers).map(
+                ([questionId, answer], index) => (
+                  <div key={index} className="mb-2">
+                    <strong>Q{questionId}:</strong>{" "}
+                    {typeof answer === "object"
+                      ? Object.entries(answer)
+                          .filter(([option, isChecked]) => isChecked)
+                          .map(([option]) => option)
+                          .join(",")
+                      : answer}
+                  </div>
+                )
               )
+            ) : (
+              <p>回答データがありません。</p>
             )}
           </div>
           <p className="mt-4">
             <strong>送信日時:</strong>{" "}
-            {survey.createdAt?.toDate().toLocaleString() || "N/A"}
+            {survey.createdAt
+              ? survey.createdAt.toDate().toLocaleString()
+              : "N/A"}
           </p>
           <button
             onClick={() => navigate("/")}

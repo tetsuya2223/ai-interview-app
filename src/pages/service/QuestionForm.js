@@ -14,20 +14,34 @@ const QuestionForm = () => {
   const onSubmit = async (data) => {
     const sessionId = uuidv4();
 
+    const filteredAnswers = Object.keys(data).reduce((acc, key) => {
+      const value = data[key];
+
+      if (typeof value === "object") {
+        acc[key] = Object.fromEntries(
+          Object.entries(value).filter(([option, isChecked]) => isChecked)
+        );
+      } else {
+        acc[key] = value;
+      }
+
+      return acc;
+    }, {});
+
     try {
       await addDoc(collection(db, "surveys"), {
         sessionId,
-        answers: data,
+        answers: filteredAnswers, // true のみのチェックボックスデータが格納される
         createdAt: Timestamp.now(),
       });
+
       toast.success("回答を送信しました");
 
-      console.log("回答がFirestoreに保存されました:", data);
+      console.log("送信されたデータ:", filteredAnswers);
 
-      console.log("送信後のsessionId;", sessionId);
       navigate("/interview-start", { state: { sessionId } });
     } catch (error) {
-      console.error("回答の送信中にエラーが発生しました:", error);
+      console.error("送信エラー:", error);
       toast.error("送信に失敗しました。もう一度試してみてください。");
     }
   };
