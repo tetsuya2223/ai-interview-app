@@ -2,20 +2,46 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase";
+import { getStorage, ref, listAll, getDownloadURL } from "firebase/storage";
 
 const SurveyDetails = () => {
   const { id } = useParams(); // URLパラメータからIDを取得
   const [survey, setSurvey] = useState(null);
+  const [videoUrls, setVideoUrls] = useState([]);
+  // const [loading, setLoading] = useState(true);
+
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSurvey = async () => {
+      // setLoding(true);
       try {
         const docRef = doc(db, "surveys", id);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
           setSurvey({ id: docSnap.id, ...docSnap.data() });
+
+          const sessionId = docSnap.data().sessionId;
+          console.log("SessionID:", sessionId);
+
+          if (!sessionId) {
+            console.error("SessionIdが存在しません");
+          }
+
+          const storage = getStorage();
+          const videoRef = ref(storage, `${sessionId}/`);
+          // パスをコンソールに表示
+          console.log("取得するパス:", `${sessionId}/`);
+
+          const res = await listAll(videoRef);
+          const fileUrls = await Promise.all(
+            res.items.map(async (itemRef) => {
+              const url = await getDownloadURL(itemRef);
+              return url; // それぞれの動画のURLを返す
+            })
+          );
+          setVideoUrls(fileUrls); // すべての動画のURLをstateに設定
         } else {
           console.error("データが見つかりません");
         }
@@ -34,6 +60,9 @@ const SurveyDetails = () => {
         <div>
           <p>
             <strong>回答ID:</strong> {survey.id}
+          </p>
+          <p>
+            <strong>Session ID:</strong> {survey.sessionId}{" "}
           </p>
           <div className="mt-4">
             <h2 className="text-lg font-bold">回答内容:</h2>
@@ -56,6 +85,22 @@ const SurveyDetails = () => {
               <p>回答データがありません。</p>
             )}
           </div>
+
+          {videoUrls && videoUrls.length > 0 ? (
+            <div className="mt-4">
+              <h3 className="text-lg font-bold">動画</h3>
+              {videoUrls.map((url, index) => (
+                <div key={index} className="mb-2">
+                  <a href={url} taget="_blank" rel="noopener noreferrer">
+                    動画 {index + 1}を見る
+                  </a>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p>動画データがありません。</p>
+          )}
+
           <p className="mt-4">
             <strong>送信日時:</strong>{" "}
             {survey.createdAt
