@@ -7,7 +7,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyBUe2Zg9vem49JXHCMEYy9hWZ1zY0kcEPM",
   authDomain: "ai-interview-project-5e220.firebaseapp.com",
   projectId: "ai-interview-project-5e220",
-  storageBucket: "ai-interview-project-5e220.appspot.com",
+  storageBucket: "gs://ai-interview-project-5e220.firebasestorage.app",
   messagingSenderId: "169615757608",
   appId: "1:169615757608:web:0eb74efba9e5154ba7401d",
   measurementId: "G-JKD6RNY83Y",
