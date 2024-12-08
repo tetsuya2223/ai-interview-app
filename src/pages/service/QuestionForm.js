@@ -1,28 +1,41 @@
+import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { db } from "../../firebase";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
-import questions from "../../data/question";
+import FormQuestionsContext from "../../contexts/FormQuestionsContext";
 import { v4 as uuidv4 } from "uuid";
 import { useForm, Controller } from "react-hook-form";
 import { toast } from "react-toastify";
 
 const QuestionForm = () => {
   const navigate = useNavigate();
-  const { control, handleSubmit, watch } = useForm();
-  const formValues = watch();
+  const formQuestions = useContext(FormQuestionsContext);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
 
   const onSubmit = async (data) => {
     const sessionId = uuidv4();
 
     const filteredAnswers = Object.keys(data).reduce((acc, key) => {
       const value = data[key];
+      const question = formQuestions.find((q) => q.id === parseInt(key));
 
       if (typeof value === "object") {
-        acc[key] = Object.fromEntries(
-          Object.entries(value).filter(([option, isChecked]) => isChecked)
-        );
+        acc[key] = {
+          question: question?.question,
+          answer: Object.fromEntries(
+            Object.entries(value).filter(([option, isChecked]) => isChecked)
+          ),
+        };
       } else {
-        acc[key] = value;
+        acc[key] = {
+          question: question?.question,
+          answer: value,
+        };
       }
 
       return acc;
@@ -54,7 +67,9 @@ const QuestionForm = () => {
             name={String(question.id)}
             control={control}
             defaultValue=""
-            rules={{ required: question.required }}
+            rules={{
+              required: question.required && "回答を記入してください。",
+            }}
             render={({ field }) => (
               <input
                 {...field}
@@ -70,9 +85,11 @@ const QuestionForm = () => {
             <Controller
               name={String(question.id)}
               control={control}
-              rules={{ required: question.required }}
+              rules={{
+                required: question.required && "1つ選択してください。",
+              }}
               render={({ field }) => (
-                <label className="inline-flex items-center">
+                <div>
                   <input
                     {...field}
                     type="radio"
@@ -80,7 +97,7 @@ const QuestionForm = () => {
                     className="mr-2"
                   />
                   {option}
-                </label>
+                </div>
               )}
             />
           </div>
@@ -92,6 +109,9 @@ const QuestionForm = () => {
               name={`${String(question.id)}.${option}`}
               control={control}
               defaultValue={false}
+              rules={
+                { required: question.required } && "１つ以上選択してください。"
+              }
               render={({ field }) => (
                 <label className="inline-flex items-center">
                   <input {...field} type="checkbox" className="mr-2" />
@@ -107,7 +127,7 @@ const QuestionForm = () => {
             name={String(question.id)}
             control={control}
             defaultValue=""
-            rules={{ required: question.required }}
+            rules={{ required: "数字を入力してください" }}
             render={({ field }) => (
               <input
                 {...field}
@@ -126,13 +146,16 @@ const QuestionForm = () => {
     <div className="max-w-2xl mx-auto p-4">
       <h1 className="text-2xl font-bold mb-6">面接前質問</h1>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {questions.map((q) => (
+        {formQuestions.map((q) => (
           <div key={q.id} className="space-y-2">
             <label className="block text-lg font-medium">
               {q.question}
               {q.required && <span className="text-red-500"> *</span>}
             </label>
             {renderInputField(q)}
+            {errors[q.id] && (
+              <div className="text-red-500">{errors[q.id]?.message}</div>
+            )}
           </div>
         ))}
         <button

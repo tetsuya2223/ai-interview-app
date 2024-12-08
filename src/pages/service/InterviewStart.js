@@ -3,8 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 const InterviewStart = () => {
   const navigate = useNavigate();
-  const { state } = useLocation(); // state を取得
-  const { sessionId } = state || {}; // state が null の場合を考慮
+  const { state } = useLocation();
+  const { sessionId } = state || {};
 
   const handleStartInterview = () => {
     if (!sessionId) {

@@ -1,40 +1,33 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import InterviewQuestionsContext from "../../contexts/InterviewQuestionsContext";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../../firebase";
-
-// 質問リスト
-const questions = [
-  "自己紹介をしてください。",
-  "これまでの経験で困難を乗り越えたエピソードを教えてください。",
-  "当社で実現したいことは何ですか？",
-  "最後に何か質問はありますか？",
-];
 
 const Interview = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { sessionId } = location.state || {}; // state から sessionId を取得
+  const { sessionId } = location.state || {};
+  const interviewQuestions = useContext(InterviewQuestionsContext);
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
   const [isReadyToRecord, setIsReadyToRecord] = useState(false);
-  const [uploadedVideos, setUploadedVideos] = useState([]); // アップロードした動画URLを保存
+  const [uploadedVideos, setUploadedVideos] = useState([]);
   const recorderRef = useRef(null);
   const videoRef = useRef(null);
-  const streamRef = useRef(null); // ストリームを管理
-  const chunksRef = useRef([]); // 録画中のデータを管理
+  const streamRef = useRef(null);
+  const chunksRef = useRef([]);
 
   // セッションIDがない場合の処理
   useEffect(() => {
     if (!sessionId) {
       console.error("セッションIDがありません。アンケートを完了してください。");
       alert("セッションIDがありません。アンケートを完了してください。");
-      navigate("/"); // ホームにリダイレクト
+      navigate("/");
     }
   }, [sessionId, navigate]);
 
-  // 録画を開始する関数
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -59,7 +52,10 @@ const Interview = () => {
         if (downloadURL) {
           setUploadedVideos((prev) => [
             ...prev,
-            { question: questions[currentQuestionIndex], url: downloadURL },
+            {
+              question: interviewQuestions[currentQuestionIndex],
+              url: downloadURL,
+            },
           ]);
         }
         // ストリームを停止
@@ -123,7 +119,7 @@ const Interview = () => {
   // 次の質問へ進む
   const handleNextQuestion = () => {
     stopRecording(); // 録画を停止
-    if (currentQuestionIndex < questions.length - 1) {
+    if (currentQuestionIndex < interviewQuestions.length - 1) {
       setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
     } else {
       navigate("/interview-end", { state: { uploadedVideos } });
@@ -166,16 +162,18 @@ const Interview = () => {
           />
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">
-              質問 {currentQuestionIndex + 1} / {questions.length}
+              質問 {currentQuestionIndex + 1} / {interviewQuestions.length}
             </h1>
-            <p className="mb-4 text-lg">{questions[currentQuestionIndex]}</p>
+            <p className="mb-4 text-lg">
+              {interviewQuestions[currentQuestionIndex]}
+            </p>
           </div>
           <div className="w-full bg-gray-300 h-2 rounded mb-4">
             <div
               className="bg-blue-500 h-2 rounded"
               style={{
                 width: `${
-                  ((currentQuestionIndex + 1) / questions.length) * 100
+                  ((currentQuestionIndex + 1) / interviewQuestions.length) * 100
                 }%`,
               }}
             ></div>
@@ -185,7 +183,7 @@ const Interview = () => {
             className="bg-blue-500 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-600 transition"
           >
             {isRecording
-              ? currentQuestionIndex === questions.length - 1
+              ? currentQuestionIndex === interviewQuestions.length - 1
                 ? "面接を終了する"
                 : "次の質問へ"
               : "録画を開始"}
