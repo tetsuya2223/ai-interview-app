@@ -16,66 +16,74 @@ import "react-toastify/dist/ReactToastify.css";
 import Dashboard from "./pages/adimin/Dashboard";
 import SurveyDetails from "./components/admin/SurveyDetails";
 
+//ContextProviders
+import { FormQuestionsProvider } from "./contexts/FormQuestionsContext";
+import { InterviewQuestionsProvider } from "./contexts/InterviewQuestionsContext";
+
 const App = () => {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <ToastContainer position="top-right" autoClose={5000} />
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route
-            path="/"
-            element={
-              <PrivateRoute>
-                <Home />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/questions"
-            element={
-              <PrivateRoute>
-                <QuestionForm />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/interview-start"
-            element={
-              <PrivateRoute>
-                <InterviewStart />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/interview"
-            element={
-              <PrivateRoute>
-                <Interview />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/interview-end"
-            element={
-              <PrivateRoute>
-                <InterviewEnd />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/thank-you"
-            element={
-              <PrivateRoute>
-                <ThankYou />
-              </PrivateRoute>
-            }
-          />
-          {/* 管理画面 */}
-          <Route path="/admin" element={<Dashboard />} />
-          <Route path="/details/:id" element={<SurveyDetails />} />
-        </Routes>
-      </BrowserRouter>
+      <FormQuestionsProvider>
+        <InterviewQuestionsProvider>
+          <BrowserRouter>
+            <ToastContainer position="top-right" autoClose={5000} />
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route
+                path="/"
+                element={
+                  <PrivateRoute>
+                    <Home />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/questions"
+                element={
+                  <PrivateRoute>
+                    <QuestionForm />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/interview-start"
+                element={
+                  <PrivateRoute>
+                    <InterviewStart />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/interview"
+                element={
+                  <PrivateRoute>
+                    <Interview />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/interview-end"
+                element={
+                  <PrivateRoute>
+                    <InterviewEnd />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/thank-you"
+                element={
+                  <PrivateRoute>
+                    <ThankYou />
+                  </PrivateRoute>
+                }
+              />
+              {/* 管理画面 */}
+              <Route path="/admin" element={<Dashboard />} />
+              <Route path="/details/:id" element={<SurveyDetails />} />
+            </Routes>
+          </BrowserRouter>
+        </InterviewQuestionsProvider>
+      </FormQuestionsProvider>
     </AuthProvider>
   );
 };

@@ -13,7 +13,7 @@ const Dashboard = () => {
   const [surveys, setSurveys] = useState([]);
   const [sortKey, setSortKey] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("asc");
-  const navigate = useNavigate(); // 詳細ページ遷移用
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSurveys = async () => {
@@ -129,10 +129,10 @@ const Dashboard = () => {
               <tr
                 key={survey.id}
                 className="hover:bg-gray-50 cursor-pointer"
-                onClick={() => navigate(`/details/${survey.id}`)} // 詳細画面に遷移
+                onClick={() => navigate(`/details/${survey.id}`)}
               >
                 <td className="border border-gray-300 px-4 py-2">
-                  {survey.answers?.["1"] || "匿名"}
+                  {survey.answers?.["1"].answer || "匿名"}
                 </td>
                 <td className="border border-gray-300 px-4 py-2">
                   {survey.status || "未選考"}

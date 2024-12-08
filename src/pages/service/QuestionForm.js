@@ -1,33 +1,41 @@
+import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { db } from "../../firebase";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
-import questions from "../../data/question";
+import FormQuestionsContext from "../../contexts/FormQuestionsContext";
 import { v4 as uuidv4 } from "uuid";
 import { useForm, Controller } from "react-hook-form";
 import { toast } from "react-toastify";
 
 const QuestionForm = () => {
   const navigate = useNavigate();
+  const formQuestions = useContext(FormQuestionsContext);
+
   const {
     control,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm();
-  const formValues = watch();
 
   const onSubmit = async (data) => {
     const sessionId = uuidv4();
 
     const filteredAnswers = Object.keys(data).reduce((acc, key) => {
       const value = data[key];
+      const question = formQuestions.find((q) => q.id === parseInt(key));
 
       if (typeof value === "object") {
-        acc[key] = Object.fromEntries(
-          Object.entries(value).filter(([option, isChecked]) => isChecked)
-        );
+        acc[key] = {
+          question: question?.question,
+          answer: Object.fromEntries(
+            Object.entries(value).filter(([option, isChecked]) => isChecked)
+          ),
+        };
       } else {
-        acc[key] = value;
+        acc[key] = {
+          question: question?.question,
+          answer: value,
+        };
       }
 
       return acc;
@@ -138,7 +146,7 @@ const QuestionForm = () => {
     <div className="max-w-2xl mx-auto p-4">
       <h1 className="text-2xl font-bold mb-6">面接前質問</h1>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {questions.map((q) => (
+        {formQuestions.map((q) => (
           <div key={q.id} className="space-y-2">
             <label className="block text-lg font-medium">
               {q.question}

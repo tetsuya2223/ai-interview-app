@@ -32,7 +32,7 @@ const SurveyDetails = () => {
           const storage = getStorage();
           const videoRef = ref(storage, `${sessionId}/`);
           // パスをコンソールに表示
-          console.log("取得するパス:", `${sessionId}/`);
+          console.log("取得するStorageのパス:", `${sessionId}/`);
 
           const res = await listAll(videoRef);
           const fileUrls = await Promise.all(
@@ -65,21 +65,22 @@ const SurveyDetails = () => {
             <strong>Session ID:</strong> {survey.sessionId}{" "}
           </p>
           <div className="mt-4">
-            <h2 className="text-lg font-bold">回答内容:</h2>
-            {/* survey.answers が存在する場合にのみ Object.entries を実行 */}
             {survey.answers ? (
               Object.entries(survey.answers).map(
-                ([questionId, answer], index) => (
-                  <div key={index} className="mb-2">
-                    <strong>Q{questionId}:</strong>{" "}
-                    {typeof answer === "object"
-                      ? Object.entries(answer)
-                          .filter(([option, isChecked]) => isChecked)
-                          .map(([option]) => option)
-                          .join(",")
-                      : answer}
-                  </div>
-                )
+                ([questionId, { question, answer }], index) => {
+                  return (
+                    <div key={index} className="mb-2">
+                      <strong>{index + 1}&nbsp;&nbsp;</strong>
+                      {question ? question : "質問がありません"} :{" "}
+                      {typeof answer === "object"
+                        ? Object.entries(answer)
+                            .filter(([option, isChecked]) => isChecked)
+                            .map(([option]) => option)
+                            .join(",")
+                        : answer}
+                    </div>
+                  );
+                }
               )
             ) : (
               <p>回答データがありません。</p>
@@ -108,7 +109,7 @@ const SurveyDetails = () => {
               : "N/A"}
           </p>
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/admin")}
             className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
             戻る
