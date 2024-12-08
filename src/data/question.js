@@ -9,7 +9,7 @@ const questions = [
     id: 2,
     question: "性別を選択してください。",
     type: "radio",
-    options: ["男性", "女性", "その他", "回答しない"],
+    options: ["男性", "女性", "回答しない"],
     required: true,
   },
   {
@@ -22,12 +22,12 @@ const questions = [
     id: 4,
     question: "希望する職種を選択してください。",
     type: "radio",
-    options: ["ホールスタッフ", "キッチンスタッフ"],
+    options: ["ホールスタッフ", "キッチンスタッフ", "どちらでも良い"],
     required: true,
   },
   {
     id: 5,
-    question: "勤務可能な曜日を選択してください。",
+    question: "勤務可能な曜日を選択してください。（複数選択可）",
     type: "checkbox",
     options: ["月", "火", "水", "木", "金", "土", "日"],
     required: false,

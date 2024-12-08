@@ -8,7 +8,12 @@ import { toast } from "react-toastify";
 
 const QuestionForm = () => {
   const navigate = useNavigate();
-  const { control, handleSubmit, watch } = useForm();
+  const {
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm();
   const formValues = watch();
 
   const onSubmit = async (data) => {
@@ -54,7 +59,9 @@ const QuestionForm = () => {
             name={String(question.id)}
             control={control}
             defaultValue=""
-            rules={{ required: question.required }}
+            rules={{
+              required: question.required && "回答を記入してください。",
+            }}
             render={({ field }) => (
               <input
                 {...field}
@@ -70,9 +77,11 @@ const QuestionForm = () => {
             <Controller
               name={String(question.id)}
               control={control}
-              rules={{ required: question.required }}
+              rules={{
+                required: question.required && "1つ選択してください。",
+              }}
               render={({ field }) => (
-                <label className="inline-flex items-center">
+                <div>
                   <input
                     {...field}
                     type="radio"
@@ -80,7 +89,7 @@ const QuestionForm = () => {
                     className="mr-2"
                   />
                   {option}
-                </label>
+                </div>
               )}
             />
           </div>
@@ -92,6 +101,9 @@ const QuestionForm = () => {
               name={`${String(question.id)}.${option}`}
               control={control}
               defaultValue={false}
+              rules={
+                { required: question.required } && "１つ以上選択してください。"
+              }
               render={({ field }) => (
                 <label className="inline-flex items-center">
                   <input {...field} type="checkbox" className="mr-2" />
@@ -107,7 +119,7 @@ const QuestionForm = () => {
             name={String(question.id)}
             control={control}
             defaultValue=""
-            rules={{ required: question.required }}
+            rules={{ required: "数字を入力してください" }}
             render={({ field }) => (
               <input
                 {...field}
@@ -133,6 +145,9 @@ const QuestionForm = () => {
               {q.required && <span className="text-red-500"> *</span>}
             </label>
             {renderInputField(q)}
+            {errors[q.id] && (
+              <div className="text-red-500">{errors[q.id]?.message}</div>
+            )}
           </div>
         ))}
         <button
