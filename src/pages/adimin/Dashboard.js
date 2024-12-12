@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { db } from "../../firebase";
+import { db, storage } from "../../firebase";
 import {
   collection,
   getDocs,
@@ -7,6 +7,7 @@ import {
   updateDoc,
   deleteDoc,
 } from "firebase/firestore";
+import { ref, deleteObject } from "firebase/storage";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
@@ -75,10 +76,29 @@ const Dashboard = () => {
     }
   };
 
-  const deleteSurvey = async (id) => {
+  const deleteSurvey = async (id, videoPaths = []) => {
     try {
       const docRef = doc(db, "surveys", id);
       await deleteDoc(docRef);
+
+      for (const path of videoPaths) {
+        const encodedPath = encodeURIComponent(path); // エンコード済みのパスを作成
+        const storageUrl = `https://firebasestorage.googleapis.com/v0/b/ai-interview-project-5e220.appspot.com/o/${encodedPath}`;
+
+        await fetch(storageUrl, {
+          method: "DELETE",
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(
+                `動画 ${path} の削除に失敗しました: ${response.statusText}`
+              );
+            }
+            console.log(`動画 ${path} を削除しました`);
+          })
+          .catch((error) => console.error(error));
+      }
+
       setSurveys((prevSurveys) =>
         prevSurveys.filter((survey) => survey.id !== id)
       );
@@ -142,7 +162,6 @@ const Dashboard = () => {
                 </td>
                 <td className="border border-gray-300 px-4 py-2">
                   <div className="flex space-x-2">
-                    {/* ステータス変更ボタン */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation(); // 行クリックと競合しないようにする
@@ -152,7 +171,6 @@ const Dashboard = () => {
                     >
                       面接完了
                     </button>
-                    {/* ２次選考 */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -163,7 +181,6 @@ const Dashboard = () => {
                       ２次選考
                     </button>
 
-                    {/* 不採用 */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -174,7 +191,6 @@ const Dashboard = () => {
                       不採用
                     </button>
 
-                    {/* 採用 */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -184,9 +200,11 @@ const Dashboard = () => {
                     >
                       採用
                     </button>
+                    {/* storageの録画データを削除する記述を追加する必要あり */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+
                         deleteSurvey(survey.id);
                       }}
                       className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
