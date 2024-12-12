@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import { getStorage, ref, listAll, getDownloadURL } from "firebase/storage";
-
+import InterviewQuestionsContext from "../../contexts/InterviewQuestionsContext";
 const SurveyDetails = () => {
   const { id } = useParams(); // URLパラメータからIDを取得
   const [survey, setSurvey] = useState(null);
@@ -11,6 +11,8 @@ const SurveyDetails = () => {
   // const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
+
+  const interviewQuestions = useContext(InterviewQuestionsContext);
 
   useEffect(() => {
     const fetchSurvey = async () => {
@@ -92,8 +94,12 @@ const SurveyDetails = () => {
               <h3 className="text-lg font-bold">動画</h3>
               {videoUrls.map((url, index) => (
                 <div key={index} className="mb-2">
+                  <p className="text-lg font-medium mb-2">
+                    質問 {index + 1}:{" "}
+                    {interviewQuestions[index] || "質問が見つかりません"}
+                  </p>
                   <a href={url} taget="_blank" rel="noopener noreferrer">
-                    動画 {index + 1}を見る
+                    動画を見る
                   </a>
                 </div>
               ))}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import InterviewQuestionsContext from "../../contexts/InterviewQuestionsContext";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -118,7 +118,7 @@ const Interview = () => {
 
   // 次の質問へ進む
   const handleNextQuestion = () => {
-    stopRecording(); // 録画を停止
+    stopRecording();
     if (currentQuestionIndex < interviewQuestions.length - 1) {
       setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
     } else {

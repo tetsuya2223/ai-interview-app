@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const InterviewEnd = () => {
   const [feedback, setFeedback] = useState("");
@@ -9,10 +10,11 @@ const InterviewEnd = () => {
     e.preventDefault();
     console.log("質問やフィードバック:", feedback);
 
-    // フィードバックをサーバーに送信する場合
-    // await sendFeedbackToServer(feedback);
+    toast.success("面接を終了しました。ご協力ありがとうございました！", {
+      position: "top-center",
+      autoClose: 2000,
+    });
 
-    alert("面接を終了しました。ご協力ありがとうございました！");
     navigate("/thank-you");
   };
 
