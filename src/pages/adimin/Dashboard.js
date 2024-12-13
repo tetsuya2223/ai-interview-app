@@ -7,8 +7,10 @@ import {
   updateDoc,
   deleteDoc,
 } from "firebase/firestore";
-import { ref, deleteObject } from "firebase/storage";
+import { ref, listAll } from "firebase/storage";
+
 import { useNavigate } from "react-router-dom";
+import DeleteButton from "../../components/DeleteButton";
 
 const Dashboard = () => {
   const [surveys, setSurveys] = useState([]);
@@ -20,10 +22,30 @@ const Dashboard = () => {
     const fetchSurveys = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "surveys"));
-        const data = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        const data = await Promise.all(
+          querySnapshot.docs.map(async (doc) => {
+            const survey = { id: doc.id, ...doc.data() };
+
+            // ストレージで動画をチェック
+            const storagePath = `${survey.id}/`;
+            const storageRef = ref(storage, storagePath);
+            const hasVideos = await listAll(storageRef)
+              .then((res) => res.items.length > 0)
+              .catch(() => false);
+
+            // ステータスを決定
+            if (!survey.answers) {
+              survey.status = "未実施";
+            } else if (hasVideos) {
+              survey.status = "面接未実施";
+            } else {
+              survey.status = "完了";
+            }
+
+            return survey;
+          })
+        );
+
         setSurveys(data);
       } catch (error) {
         console.error("データ取得エラー:", error);
@@ -82,7 +104,7 @@ const Dashboard = () => {
       await deleteDoc(docRef);
 
       for (const path of videoPaths) {
-        const encodedPath = encodeURIComponent(path); // エンコード済みのパスを作成
+        const encodedPath = encodeURIComponent(path);
         const storageUrl = `https://firebasestorage.googleapis.com/v0/b/ai-interview-project-5e220.appspot.com/o/${encodedPath}`;
 
         await fetch(storageUrl, {
@@ -140,8 +162,9 @@ const Dashboard = () => {
                 {sortKey === "createdAt" && (sortOrder === "asc" ? " ▲" : " ▼")}
               </th>
               <th className="border border-gray-300 px-4 py-2 text-left">
-                操作
+                採用
               </th>
+              <th className="border border-gray-300 px-4 py-2 text-center"></th>
             </tr>
           </thead>
           <tbody>
@@ -164,25 +187,6 @@ const Dashboard = () => {
                   <div className="flex space-x-2">
                     <button
                       onClick={(e) => {
-                        e.stopPropagation(); // 行クリックと競合しないようにする
-                        updateStatus(survey.id, "面接完了");
-                      }}
-                      className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
-                    >
-                      面接完了
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        updateStatus(survey.id, "２次選考");
-                      }}
-                      className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
-                    >
-                      ２次選考
-                    </button>
-
-                    <button
-                      onClick={(e) => {
                         e.stopPropagation();
                         updateStatus(survey.id, "不採用");
                       }}
@@ -190,7 +194,6 @@ const Dashboard = () => {
                     >
                       不採用
                     </button>
-
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -200,18 +203,14 @@ const Dashboard = () => {
                     >
                       採用
                     </button>
-                    {/* storageの録画データを削除する記述を追加する必要あり */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-
-                        deleteSurvey(survey.id);
-                      }}
-                      className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                    >
-                      削除
-                    </button>
                   </div>
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-center">
+                  <DeleteButton
+                    onDelete={() => {
+                      deleteSurvey(survey.id);
+                    }}
+                  />
                 </td>
               </tr>
             ))}

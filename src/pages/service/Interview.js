@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import InterviewQuestionsContext from "../../contexts/InterviewQuestionsContext";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "../../firebase";
 
 const Interview = () => {
   const location = useLocation();
@@ -85,10 +83,9 @@ const Interview = () => {
   // Firebase Storage に動画をアップロードする関数
   const uploadVideoWithFetch = async (fileBlob, questionIndex) => {
     try {
-      const fileName = `${sessionId}/question_${questionIndex}_${Date.now()}.webm`; // 一意のファイル名
-      const encodedFileName = encodeURIComponent(fileName); // ファイル名をURLエンコード
+      const fileName = `${sessionId}/question_${questionIndex}_${Date.now()}.webm`;
+      const encodedFileName = encodeURIComponent(fileName);
 
-      // 正しいバケット名を使用したアップロード URL
       const storageUrl = `https://firebasestorage.googleapis.com/v0/b/ai-interview-project-5e220.firebasestorage.app/o/${encodedFileName}?uploadType=media`;
 
       console.log("手動生成したアップロードURL:", storageUrl);
