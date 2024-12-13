@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { db, storage } from "../../firebase";
+import { db } from "../../firebase";
 import {
   collection,
   getDocs,
@@ -7,7 +7,6 @@ import {
   updateDoc,
   deleteDoc,
 } from "firebase/firestore";
-import { ref, deleteObject } from "firebase/storage";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
