@@ -106,14 +106,13 @@ const Interview = () => {
 
       const result = await response.json();
       console.log("アップロード成功:", result);
-      return result.mediaLink; // ダウンロードURLを返す
+      return result.mediaLink;
     } catch (error) {
       console.error("アップロード中のエラー:", error);
       return null;
     }
   };
 
-  // 次の質問へ進む
   const handleNextQuestion = () => {
     stopRecording();
     if (currentQuestionIndex < interviewQuestions.length - 1) {

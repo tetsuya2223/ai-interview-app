@@ -1,8 +1,6 @@
 import { createContext } from "react";
 
-const FormQuestionsContext = createContext();
-
-const formQuestions = [
+const FormQuestionsContext = createContext([
   {
     id: 1,
     question: "お名前を教えてください。",
@@ -92,14 +90,6 @@ const formQuestions = [
     type: "text",
     required: false,
   },
-];
-
-export const FormQuestionsProvider = ({ children }) => {
-  return (
-    <FormQuestionsContext.Provider value={formQuestions}>
-      {children}
-    </FormQuestionsContext.Provider>
-  );
-};
+]);
 
 export default FormQuestionsContext;
