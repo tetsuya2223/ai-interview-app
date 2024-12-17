@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { db } from "../../firebase";
+import { db, storage } from "../../firebase";
 import {
   collection,
   getDocs,
@@ -7,22 +7,45 @@ import {
   updateDoc,
   deleteDoc,
 } from "firebase/firestore";
+import { ref, listAll } from "firebase/storage";
+
 import { useNavigate } from "react-router-dom";
+import DeleteButton from "../../components/DeleteButton";
 
 const Dashboard = () => {
   const [surveys, setSurveys] = useState([]);
   const [sortKey, setSortKey] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("asc");
-  const navigate = useNavigate(); // 詳細ページ遷移用
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSurveys = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "surveys"));
-        const data = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        const data = await Promise.all(
+          querySnapshot.docs.map(async (doc) => {
+            const survey = { id: doc.id, ...doc.data() };
+
+            // ストレージで動画をチェック
+            const storagePath = `${survey.id}/`;
+            const storageRef = ref(storage, storagePath);
+            const hasVideos = await listAll(storageRef)
+              .then((res) => res.items.length > 0)
+              .catch(() => false);
+
+            // ステータスを決定
+            if (!survey.answers) {
+              survey.status = "未実施";
+            } else if (hasVideos) {
+              survey.status = "面接未実施";
+            } else {
+              survey.status = "完了";
+            }
+
+            return survey;
+          })
+        );
+
         setSurveys(data);
       } catch (error) {
         console.error("データ取得エラー:", error);
@@ -75,10 +98,29 @@ const Dashboard = () => {
     }
   };
 
-  const deleteSurvey = async (id) => {
+  const deleteSurvey = async (id, videoPaths = []) => {
     try {
       const docRef = doc(db, "surveys", id);
       await deleteDoc(docRef);
+
+      for (const path of videoPaths) {
+        const encodedPath = encodeURIComponent(path);
+        const storageUrl = `https://firebasestorage.googleapis.com/v0/b/ai-interview-project-5e220.appspot.com/o/${encodedPath}`;
+
+        await fetch(storageUrl, {
+          method: "DELETE",
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(
+                `動画 ${path} の削除に失敗しました: ${response.statusText}`
+              );
+            }
+            console.log(`動画 ${path} を削除しました`);
+          })
+          .catch((error) => console.error(error));
+      }
+
       setSurveys((prevSurveys) =>
         prevSurveys.filter((survey) => survey.id !== id)
       );
@@ -120,8 +162,9 @@ const Dashboard = () => {
                 {sortKey === "createdAt" && (sortOrder === "asc" ? " ▲" : " ▼")}
               </th>
               <th className="border border-gray-300 px-4 py-2 text-left">
-                操作
+                採用
               </th>
+              <th className="border border-gray-300 px-4 py-2 text-center"></th>
             </tr>
           </thead>
           <tbody>
@@ -129,10 +172,10 @@ const Dashboard = () => {
               <tr
                 key={survey.id}
                 className="hover:bg-gray-50 cursor-pointer"
-                onClick={() => navigate(`/details/${survey.id}`)} // 詳細画面に遷移
+                onClick={() => navigate(`/details/${survey.id}`)}
               >
                 <td className="border border-gray-300 px-4 py-2">
-                  {survey.answers?.["1"] || "匿名"}
+                  {survey.answers?.["1"].answer || "匿名"}
                 </td>
                 <td className="border border-gray-300 px-4 py-2">
                   {survey.status || "未選考"}
@@ -142,28 +185,6 @@ const Dashboard = () => {
                 </td>
                 <td className="border border-gray-300 px-4 py-2">
                   <div className="flex space-x-2">
-                    {/* ステータス変更ボタン */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation(); // 行クリックと競合しないようにする
-                        updateStatus(survey.id, "面接完了");
-                      }}
-                      className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
-                    >
-                      面接完了
-                    </button>
-                    {/* ２次選考 */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        updateStatus(survey.id, "２次選考");
-                      }}
-                      className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
-                    >
-                      ２次選考
-                    </button>
-
-                    {/* 不採用 */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -173,8 +194,6 @@ const Dashboard = () => {
                     >
                       不採用
                     </button>
-
-                    {/* 採用 */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -184,16 +203,14 @@ const Dashboard = () => {
                     >
                       採用
                     </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteSurvey(survey.id);
-                      }}
-                      className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                    >
-                      削除
-                    </button>
                   </div>
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-center">
+                  <DeleteButton
+                    onDelete={() => {
+                      deleteSurvey(survey.id);
+                    }}
+                  />
                 </td>
               </tr>
             ))}
